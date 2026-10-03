@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Sc2ReplayWebApp.Tests/Sc2ReplayWebApp.Tests.csproj" />
+  <Project Path="Sc2ReplayWebApp/Sc2ReplayWebApp.csproj" />
+</Solution>

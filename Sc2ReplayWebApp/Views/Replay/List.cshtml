@@ -1,0 +1,37 @@
+﻿@model IEnumerable<Sc2ReplayWebApp.Models.ReplaySummary>
+
+<h2>Replay History</h2>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Map</th>
+            <th>Winner</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        @foreach (var replay in Model)
+        {
+            <tr>
+
+                <td>@replay.UploadedAt</td>
+
+                <td>
+                    <a asp-action="Details"
+                       asp-route-id="@replay.Id">
+                        @replay.MapName
+                    </a>
+                </td>
+
+                <td>@replay.Winner</td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

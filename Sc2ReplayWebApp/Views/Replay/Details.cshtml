@@ -1,0 +1,47 @@
+﻿@model Sc2ReplayWebApp.Models.ReplaySummary
+
+<h2>@Model.MapName</h2>
+
+<div class="card">
+    <div class="card-body">
+
+        <h4>Winner</h4>
+
+        <p>@Model.Winner</p>
+
+        <h4>Duration</h4>
+
+        @{
+            var duration = TimeSpan.FromSeconds(Model.DurationSeconds);
+        }
+
+        <p>Raw Duration: @Model.RawDuration</p>
+        <p>@duration.ToString(@"hh\:mm\:ss")</p>
+
+    </div>
+</div>
+
+<h3>Players</h3>
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Race</th>
+            <th>Won</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var player in Model.Players)
+        {
+            <tr>
+                <td>@player.Name</td>
+                <td>@player.Race</td>
+                <td>@player.Won</td>
+            </tr>
+        }
+    </tbody>
+
+</table>

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Sc2ReplayWebApp.Data;
 using Sc2ReplayWebApp.Models;
 using Sc2ReplayWebApp.Services;
@@ -107,24 +106,47 @@ public class ReplayController : Controller
         return View(replay);
     }
 
-    public async Task<IActionResult> List()
+    public async Task<IActionResult> List(string search)
     {
-        return View(
-            await _db.Replays
-                .OrderByDescending(x => x.UploadedAt)
-                .ToListAsync());
+        var query = _db.Replays
+            .Include(r => r.Players)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query
+                .Where(r => r.MapName.Contains(search));
+        }
+
+        var replays = await query
+            .OrderByDescending(r => r.UploadedAt)
+            .ToListAsync();
+
+        var wins = replays.Count(r => r.Winner == "Player 1");
+
+        var model = new ReplayHistoryViewModel
+        {
+            TotalReplays = replays.Count,
+            Wins = wins,
+            Losses = replays.Count - wins,
+            WinRate = replays.Count == 0
+                ? 0
+                : (double)wins / replays.Count * 100,
+            Replays = replays
+        };
+
+        return View(model);
     }
 
     [HttpPost]
     public async Task<IActionResult> Delete(int id)
     {
-        var replay = await _db.Replays
-            .Include(x => x.Players)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var replay =
+        await _db.Replays.FindAsync(id);
 
         if (replay != null)
         {
-            _db.Remove(replay);
+            _db.Replays.Remove(replay);
             await _db.SaveChangesAsync();
         }
 

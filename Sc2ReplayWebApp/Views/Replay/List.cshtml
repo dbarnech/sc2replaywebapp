@@ -1,33 +1,117 @@
-﻿@model IEnumerable<Sc2ReplayWebApp.Models.ReplaySummary>
+﻿@model Sc2ReplayWebApp.Models.ReplayHistoryViewModel
 
 <h2>Replay History</h2>
+
+<form method="get" class="mb-4">
+
+    <div class="input-group">
+
+        <input name="search"
+               class="form-control"
+               placeholder="Search map..." />
+
+        <button class="btn btn-primary"
+                type="submit">
+            Search
+        </button>
+
+    </div>
+
+</form>
+
+<div class="row mb-4">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6>Total Replays</h6>
+                <h2>@Model.TotalReplays</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-success shadow-sm">
+            <div class="card-body">
+                <h6>Wins</h6>
+                <h2>@Model.Wins</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-danger shadow-sm">
+            <div class="card-body">
+                <h6>Losses</h6>
+                <h2>@Model.Losses</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-bg-primary shadow-sm">
+            <div class="card-body">
+                <h6>Win Rate</h6>
+                <h2>@Model.WinRate.ToString("N1")%</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <table class="table">
 
     <thead>
         <tr>
-            <th>Date</th>
             <th>Map</th>
             <th>Winner</th>
+            <th>Duration</th>
+            <th>Date</th>
+            <th></th>
         </tr>
     </thead>
 
     <tbody>
 
-        @foreach (var replay in Model)
+        @foreach (var replay in Model.Replays)
         {
             <tr>
 
-                <td>@replay.UploadedAt</td>
+                <td>@replay.MapName</td>
 
                 <td>
-                    <a asp-action="Details"
-                       asp-route-id="@replay.Id">
-                        @replay.MapName
-                    </a>
+                    <span class="badge bg-success">
+                        @replay.Winner
+                    </span>
                 </td>
 
-                <td>@replay.Winner</td>
+                <td>
+                    @replay.DurationDisplay
+                </td>
+
+                <td>
+                    @replay.UploadedAt.ToLocalTime()
+                </td>
+
+                <td>
+
+                    <a asp-action="Details"
+                       asp-route-id="@replay.Id"
+                       class="btn btn-sm btn-primary">
+                        View
+                    </a>
+
+                    <form asp-action="Delete"
+                          asp-route-id="@replay.Id"
+                          method="post">
+
+                        <button class="btn btn-sm btn-danger">
+                            Delete
+                        </button>
+
+                    </form>
+
+                </td>
 
             </tr>
         }

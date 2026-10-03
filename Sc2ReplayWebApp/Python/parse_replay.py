@@ -6,7 +6,8 @@ archive = mpyq.MPQArchive(sys.argv[1])
 
 metadata = archive.read_file("replay.gamemetadata.json")
 
-game_data = json.loads(metadata.decode("utf-8"))
+metadataJson = metadata.decode("utf-8")
+game_data = json.loads(metadataJson)
 
 duration_seconds = int(game_data["Duration"] / 1.4)
 
@@ -22,17 +23,29 @@ for player in game_data["Players"]:
         winner = f"Player {player['PlayerID']}"
 
     players.append({
+        "PlayerID": int(player['PlayerID']),
         "Name": f"Player {player['PlayerID']}",
-        "Race": player["AssignedRace"],
+        "APM": float(player["APM"]),
+        "Result": player["Result"],
+        "SelectedRace": player["SelectedRace"],
+        "AssignedRace": player["AssignedRace"],
         "Won": won
     })
 
+
+#print(f"{json.dumps(metadataJson)}")
+
 result = {
-    "MapName": game_data["Title"],
+    "Title": game_data["Title"],
+    "GameVersion": game_data["GameVersion"],
+    "DataBuild": game_data["DataBuild"],
+    "DataVersion": game_data["DataVersion"],
+    "BaseBuild": game_data["BaseBuild"],
+    "Duration": int(game_data["Duration"]),
     "Winner": winner,
     "DurationSeconds": duration_seconds,
-    "RawDuration": int(game_data["Duration"]),
     "Players": players
 }
 
 print(json.dumps(result))
+

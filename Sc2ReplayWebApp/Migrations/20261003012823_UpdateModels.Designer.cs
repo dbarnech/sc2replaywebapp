@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sc2ReplayWebApp.Data;
 
@@ -10,9 +11,11 @@ using Sc2ReplayWebApp.Data;
 namespace Sc2ReplayWebApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261003012823_UpdateModels")]
+    partial class UpdateModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
@@ -23,8 +26,8 @@ namespace Sc2ReplayWebApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<double>("ActionsPerMinute")
-                        .HasColumnType("REAL");
+                    b.Property<int>("ActionsPerMinute")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -53,26 +56,10 @@ namespace Sc2ReplayWebApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("BaseBuild")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DataBuild")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DataVersion")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("DurationSeconds")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GameVersion")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

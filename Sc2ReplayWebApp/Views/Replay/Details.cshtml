@@ -1,47 +1,128 @@
 ﻿@model Sc2ReplayWebApp.Models.ReplaySummary
 
-<h2>@Model.MapName</h2>
 
-<div class="card">
-    <div class="card-body">
 
-        <h4>Winner</h4>
+<h2 class="mb-4">@Model.MapName</h2>
 
-        <p>@Model.Winner</p>
+<div class="row mb-4">
 
-        <h4>Duration</h4>
-
-        @{
-            var duration = TimeSpan.FromSeconds(Model.DurationSeconds);
-        }
-
-        <p>Raw Duration: @Model.RawDuration</p>
-        <p>@duration.ToString(@"hh\:mm\:ss")</p>
-
+    <div class="col-md-4">
+        <div class="card text-bg-success shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Winner</h5>
+                <h3>@Model.Winner</h3>
+            </div>
+        </div>
     </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Duration</h5>
+                <h3>@Model.DurationDisplay</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Players</h5>
+                <h3>@Model.Players.Count</h3>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<h3>Players</h3>
+<div class="card mb-4 shadow-sm">
 
-<table class="table">
+    <div class="card-header">
+        Replay Information
+    </div>
 
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Race</th>
-            <th>Won</th>
-        </tr>
-    </thead>
+    <div class="card-body">
 
-    <tbody>
-        @foreach (var player in Model.Players)
-        {
-            <tr>
-                <td>@player.Name</td>
-                <td>@player.Race</td>
-                <td>@player.Won</td>
-            </tr>
-        }
-    </tbody>
+        <div class="row">
 
-</table>
+            <div class="col-md-4">
+                <strong>Map</strong><br />
+                @Model.MapName
+            </div>
+
+            <div class="col-md-4">
+                <strong>Winner</strong><br />
+                <i class="bi bi-trophy-fill"></i>
+                @Model.Winner
+            </div>
+
+            <div class="col-md-4">
+                <strong>Duration</strong><br />
+                <i class="bi bi-clock-fill"></i>
+                @Model.DurationDisplay
+            </div>
+
+            <div class="col-md-4">
+                <strong>Players</strong><br />
+                <i class="bi bi-people-fill"></i>
+                @Model.Players.Count
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row">
+
+    @foreach (var player in Model.Players)
+    {
+        string raceColor =
+            player.Race switch
+            {
+            "Terr" => "primary",
+            "Zerg" => "danger",
+            "Prot" => "warning",
+            _ => "secondary"
+            };
+
+        <div class="col-md-6 mb-3">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header">
+
+                    @if (player.Won)
+                    {
+                        <span class="badge bg-success">
+                            Winner
+                        </span>
+                    }
+
+                    @player.Name
+
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+                        <strong>Race:</strong>
+                        <span class="badge bg-@raceColor">
+                            @player.Race
+                        </span>
+                    </p>
+
+                    <p>
+                        <strong>APM:</strong>
+                        @player.ActionsPerMinute
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>

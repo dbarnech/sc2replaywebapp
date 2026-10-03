@@ -5,7 +5,8 @@ using Sc2ReplayWebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {

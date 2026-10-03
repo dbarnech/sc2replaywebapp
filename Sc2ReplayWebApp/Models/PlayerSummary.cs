@@ -7,6 +7,8 @@ public class PlayerSummary
     public string Name { get; set; } = "";
 
     public string Race { get; set; } = "";
+    
+    public double ActionsPerMinute { get; set; }
 
     public bool Won { get; set; }
 

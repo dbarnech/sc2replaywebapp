@@ -43,7 +43,7 @@ public class ReplayParserService
             UseShellExecute = false
         };
 
-        _logger.LogInformation("Executing parser script {Script}", parserFile);
+        _logger.LogInformation("Executing parser script {Script} for replay {ReplayPath}", parserFile, replayPath);
 
         using var process = Process.Start(start)!;
 
@@ -69,7 +69,7 @@ public class ReplayParserService
             throw new Exception("Replay parser returned empty output.");
         }
 
-        _logger.LogDebug(json);
+        //_logger.LogDebug(json);
 
         return JsonSerializer
             .Deserialize<ReplayParseResult>(json, DefaultJsonSerializerOptions)!;

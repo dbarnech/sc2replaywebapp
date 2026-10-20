@@ -65,11 +65,22 @@ namespace Sc2ReplayWebApp.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DetailsHex")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DetailsRaw")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("DurationSeconds")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("FileName")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("GameDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("GameVersion")
@@ -82,6 +93,10 @@ namespace Sc2ReplayWebApp.Migrations
 
                     b.Property<int>("RawDuration")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReplayHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UploadedAt")
                         .HasColumnType("TEXT");

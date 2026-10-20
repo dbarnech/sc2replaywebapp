@@ -31,70 +31,89 @@ public class ReplayController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Upload(IFormFile file)
+    public async Task<IActionResult> Upload(List<IFormFile> files)
     {
-        try
+        var skippedCount = 0;
+
+        foreach (var file in files)
         {
-            if (file == null || file.Length == 0)
-                return View();
-
-            var folder = Path.Combine(_env.ContentRootPath, "uploads");
-
-            Directory.CreateDirectory(folder);
-
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-            var path = Path.Combine(folder, fileName);
-
-            using (var stream = System.IO.File.Create(path))
+            try
             {
-                await file.CopyToAsync(stream);
-                await stream.FlushAsync();
+                if (file == null || file.Length == 0)
+                {
+                    skippedCount++;
+                    continue;
+                }
+
+                var folder = Path.Combine(_env.ContentRootPath, "uploads");
+                Directory.CreateDirectory(folder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var path = Path.Combine(folder, fileName);
+
+                using (var stream = System.IO.File.Create(path))
+                {
+                    await file.CopyToAsync(stream);
+                    await stream.FlushAsync();
+                }
+
+                using (System.IO.File.OpenRead(path))
+                {
+                }
+
+                // Get the hash of the file to check for duplicates
+                var replayHash = FileHashHelper.ComputeSha256(path);
+                var exists = await _db.Replays.AnyAsync(r => r.ReplayHash == replayHash);
+                if (exists)
+                {
+                    _logger.LogWarning("Replay '{file.FileName}' has already been uploaded.", file.FileName);
+                    skippedCount++;
+                    continue;
+                }
+
+                var parsed = await _parser.ParseReplay(path);
+
+                var replay = new ReplaySummary
+                {
+                    FileName = file.FileName,
+                    ReplayHash = replayHash,
+                    GameVersion = parsed.GameVersion,
+                    BaseBuild = parsed.BaseBuild,
+                    DataBuild = parsed.DataBuild,
+                    DataVersion = parsed.DataVersion,
+                    MapName = parsed.Title,
+                    Winner = string.Join(",", parsed.Players.Where(p => p.Won).Select(p => p.Name)),
+                    DurationSeconds = parsed.DurationSeconds,
+                    UploadedAt = DateTime.UtcNow,
+                    GameDate = parsed.GameDate,
+                    DetailsHex = parsed.DetailsHex,
+                    DetailsRaw = parsed.DetailsRaw,
+                    Players = parsed
+                        .Players
+                        .Select(p => new PlayerSummary
+                        {
+                            Name = p.Name,
+                            ActionsPerMinute = p.APM,
+                            Race = p.Race,
+                            Won = p.Won
+                        })
+                        .ToList()
+                };
+
+                _db.Replays.Add(replay);                
             }
-
-            using (System.IO.File.OpenRead(path))
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error uploading replay");
+                ModelState.AddModelError(string.Empty, "An error occurred while uploading the replay.");
             }
-
-            var parsed = await _parser.ParseReplay(path);
-
-            //_logger.LogDebug(parsed.MetadataJson);
-
-            var replay = new ReplaySummary
-            {
-                FileName = file.FileName,
-                GameVersion = parsed.GameVersion,
-                BaseBuild = parsed.BaseBuild,
-                DataBuild = parsed.DataBuild,
-                DataVersion = parsed.DataVersion,
-                MapName = parsed.Title,
-                Winner = string.Join(",", parsed.Players.Where(p => p.Won).Select(p => p.Name)),
-                DurationSeconds = parsed.DurationSeconds,
-                UploadedAt = DateTime.UtcNow,
-                Players = parsed
-                    .Players
-                    .Select(p => new PlayerSummary
-                    {
-                        Name = p.Name,
-                        ActionsPerMinute = p.APM,
-                        Race = p.AssignedRace,
-                        Won = p.Won
-                    })
-                    .ToList()
-            };
-
-            _db.Replays.Add(replay);
-
-            await _db.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Details),
-                new { id = replay.Id });
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error uploading replay");
-            ModelState.AddModelError(string.Empty, "An error occurred while uploading the replay.");
-            return View();
-        }
+
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = $"{files.Count} replay(s) imported, {skippedCount} skipped.";
+
+        return View();
     }
 
     public async Task<IActionResult> Details(int id)
@@ -122,7 +141,8 @@ public class ReplayController : Controller
             .OrderByDescending(r => r.UploadedAt)
             .ToListAsync();
 
-        var wins = replays.Count(r => r.Winner == "Player 1");
+        //TODO: Change this to use the current logged in user instead of hardcoding "DieGoRepeat"
+        var wins = replays.Count(r => r.Winner == "DieGoRepeat");
 
         var model = new ReplayHistoryViewModel
         {

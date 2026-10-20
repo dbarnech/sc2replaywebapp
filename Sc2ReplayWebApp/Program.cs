@@ -34,6 +34,6 @@ app.UseRouting();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Replay}/{action=Upload}/{id?}");
+    pattern: "{controller=Replay}/{action=List}/{id?}");
 
 app.Run();

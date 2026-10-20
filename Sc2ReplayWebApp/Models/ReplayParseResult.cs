@@ -14,6 +14,12 @@ public class ReplayParseResult
 
     public string BaseBuild { get; set; } = null!;
 
+    public DateTime GameDate { get; set; }
+
+    public string DetailsHex { get; set; } = null!;
+
+    public string DetailsRaw { get; set; } = null!;
+
     public int Duration { get; set; }
 
     // DurationSeconds = Duration / 1.4
@@ -42,9 +48,7 @@ public class PlayerParseResult
 
     public string Result { get; set; } = null!;
 
-    public string SelectedRace { get; set; } = null!;
-
-    public string AssignedRace { get; set; } = null!;
+    public string Race { get; set; } = null!;
 
     public bool Won { get; set; }
 }

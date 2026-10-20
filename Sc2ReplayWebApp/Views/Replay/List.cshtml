@@ -66,7 +66,8 @@
             <th>Map</th>
             <th>Winner</th>
             <th>Duration</th>
-            <th>Date</th>
+            <th>Played on</th>
+            <th>Uploaded on</th>
             <th></th>
         </tr>
     </thead>
@@ -87,6 +88,10 @@
 
                 <td>
                     @replay.DurationDisplay
+                </td>
+
+                <td>
+                    @replay.GameDate.ToLocalTime()
                 </td>
 
                 <td>

@@ -6,6 +6,8 @@ public class ReplaySummary
 {
     public int Id { get; set; }
 
+    public string ReplayHash { get; set; } = null!;
+
     public string FileName { get; set; } = null!;
 
     public string GameVersion { get; set; } = null!;
@@ -15,6 +17,10 @@ public class ReplaySummary
     public string DataVersion { get; set; } = null!;
 
     public string BaseBuild { get; set; } = null!;
+
+    public string DetailsHex { get; set; } = null!;
+
+    public string DetailsRaw { get; set; } = null!;
 
     public string MapName { get; set; } = null!;
 
@@ -27,7 +33,9 @@ public class ReplaySummary
     [NotMapped]
     public string DurationDisplay => TimeSpan.FromSeconds(DurationSeconds).ToString(@"hh\:mm\:ss");
 
-    public DateTime UploadedAt { get; set; }
+    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime GameDate { get; set; } = DateTime.UtcNow;
 
     public List<PlayerSummary> Players { get; set; } = [];
 }

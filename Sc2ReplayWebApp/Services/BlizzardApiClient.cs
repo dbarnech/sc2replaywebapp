@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.Extensions.Options;
-using Sc2ReplayWebApp.Extensions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

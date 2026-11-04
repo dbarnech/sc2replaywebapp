@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.EntityFrameworkCore;
 using Sc2ReplayWebApp.Data;
 using Sc2ReplayWebApp.Extensions;

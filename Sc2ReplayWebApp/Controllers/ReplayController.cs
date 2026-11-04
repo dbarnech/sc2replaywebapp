@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sc2ReplayWebApp.Data;
-using Sc2ReplayWebApp.Extensions;
 using Sc2ReplayWebApp.Models;
 using Sc2ReplayWebApp.Services;
 
@@ -16,6 +15,7 @@ public class ReplayController : Controller
 
     private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _env;
+    private readonly string _uploadsFolder;
     private readonly ILogger<ReplayController> _logger;
 
     public ReplayController(
@@ -30,6 +30,10 @@ public class ReplayController : Controller
         _db = db;
         _env = env;
         _logger = logger;
+
+        // Ensure the uploads folder exists
+        _uploadsFolder = Path.Combine(_env.ContentRootPath, "uploads");
+        Directory.CreateDirectory(_uploadsFolder);
     }
 
     public IActionResult Upload()
@@ -46,20 +50,17 @@ public class ReplayController : Controller
 
         foreach (var file in files)
         {
+            if (file == null || file.Length == 0)
+            {
+                skippedCount++;
+                continue;
+            }
+            
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var path = Path.Combine(_uploadsFolder, fileName);
+
             try
             {
-                if (file == null || file.Length == 0)
-                {
-                    skippedCount++;
-                    continue;
-                }
-
-                var folder = Path.Combine(_env.ContentRootPath, "uploads");
-                Directory.CreateDirectory(folder);
-
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-                var path = Path.Combine(folder, fileName);
-
                 using (var stream = System.IO.File.Create(path))
                 {
                     await file.CopyToAsync(stream);
@@ -115,8 +116,23 @@ public class ReplayController : Controller
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading replay");
+                _logger.LogError(ex, "Error uploading replay {Filename}.", path);
                 ModelState.AddModelError(string.Empty, "An error occurred while uploading the replay.");
+            }
+            finally
+            {
+                // Delete the temporary file after processing
+                try
+                {
+                    if (System.IO.File.Exists(path))
+                    {
+                        System.IO.File.Delete(path);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error deleting temporary replay file {Filename}.", path);
+                }
             }
         }
 

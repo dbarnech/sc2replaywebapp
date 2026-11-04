@@ -15,7 +15,55 @@ namespace Sc2ReplayWebApp.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.13");
+
+            modelBuilder.Entity("Sc2ReplayWebApp.Models.BattleNetUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BattleNetId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BattleTag")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FirstLogin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastLogin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Region")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sc2PlayerName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sc2ProfileId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Sc2RealmId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Sc2RegionId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BattleNetId")
+                        .IsUnique();
+
+                    b.ToTable("BattleNetUsers");
+                });
 
             modelBuilder.Entity("Sc2ReplayWebApp.Models.PlayerSummary", b =>
                 {
@@ -56,6 +104,9 @@ namespace Sc2ReplayWebApp.Migrations
                     b.Property<string>("BaseBuild")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("BattleNetUserId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("DataBuild")
                         .IsRequired()
@@ -107,6 +158,8 @@ namespace Sc2ReplayWebApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BattleNetUserId");
+
                     b.ToTable("Replays");
                 });
 
@@ -117,6 +170,20 @@ namespace Sc2ReplayWebApp.Migrations
                         .HasForeignKey("ReplaySummaryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Sc2ReplayWebApp.Models.ReplaySummary", b =>
+                {
+                    b.HasOne("Sc2ReplayWebApp.Models.BattleNetUser", "User")
+                        .WithMany("Replays")
+                        .HasForeignKey("BattleNetUserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sc2ReplayWebApp.Models.BattleNetUser", b =>
+                {
+                    b.Navigation("Replays");
                 });
 
             modelBuilder.Entity("Sc2ReplayWebApp.Models.ReplaySummary", b =>

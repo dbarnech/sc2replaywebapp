@@ -35,6 +35,32 @@
                         </li>
                     </ul>
                 </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="d-flex align-items-center">
+
+                        <span class="badge rounded-pill bg-primary me-2">
+                            @User.Identity.Name
+                        </span>
+                        <form asp-controller="Account"
+                              asp-action="Logout"
+                              method="post">
+                            <button type="submit"
+                                    class="btn btn-outline-danger btn-sm">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <a class="btn btn-primary"
+                       asp-controller="Account"
+                       asp-action="Login">
+                        <i class="bi bi-person-circle"></i>
+                        Login with Battle.net
+                    </a>
+                }
             </div>
         </nav>
     </header>
@@ -46,8 +72,10 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - Sc2ReplayWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
+                &copy; @{
+                    DateTime.Now.ToString("yyyy");
+                } - Sc2ReplayWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

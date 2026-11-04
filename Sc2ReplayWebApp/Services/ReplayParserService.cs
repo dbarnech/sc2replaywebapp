@@ -4,7 +4,12 @@ using Sc2ReplayWebApp.Models;
 
 namespace Sc2ReplayWebApp.Services;
 
-public class ReplayParserService
+public interface IReplayParserService
+{
+    Task<ReplayParseResult> ParseReplay(string replayPath);
+}
+
+public class ReplayParserService : IReplayParserService
 {
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<ReplayParserService> _logger;

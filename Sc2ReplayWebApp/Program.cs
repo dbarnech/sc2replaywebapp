@@ -1,6 +1,7 @@
-
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.EntityFrameworkCore;
 using Sc2ReplayWebApp.Data;
+using Sc2ReplayWebApp.Extensions;
 using Sc2ReplayWebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,14 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    options.UseSqlite(
-        builder.Configuration.GetConnectionString(
-            "DefaultConnection"));
-});
+builder.Services
+    .AddDbContext<AppDbContext>(options =>
+    {
+        options.UseSqlite(
+            builder.Configuration.GetConnectionString("DefaultConnection"));
+    });
 
-builder.Services.AddScoped<ReplayParserService>();
+builder.Services
+    .AddBattleNetAuthentication(builder.Configuration);
+
+builder.Services
+    .AddHttpClient()
+    .AddScoped<IReplayParserService, ReplayParserService>()
+    .AddScoped<IBattleNetUserService, BattleNetUserService>()
+    .AddSingleton<IBlizzardApiClient, BlizzardApiClient>();
 
 var app = builder.Build();
 
@@ -31,6 +39,9 @@ using (var scope = app.Services.CreateScope())
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

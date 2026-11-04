@@ -1,25 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sc2ReplayWebApp.Data;
+using Sc2ReplayWebApp.Extensions;
 using Sc2ReplayWebApp.Models;
 using Sc2ReplayWebApp.Services;
 
 namespace Sc2ReplayWebApp.Controllers;
 
+[Authorize]
 public class ReplayController : Controller
 {
-    private readonly ReplayParserService _parser;
+    private readonly IReplayParserService _parser;
+    private readonly IBattleNetUserService _userService;
+
     private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<ReplayController> _logger;
 
     public ReplayController(
-        ReplayParserService parser,
+        IReplayParserService parser,
+        IBattleNetUserService userService,
         AppDbContext db,
         IWebHostEnvironment env,
         ILogger<ReplayController> logger)
     {
         _parser = parser;
+        _userService = userService;
         _db = db;
         _env = env;
         _logger = logger;
@@ -34,6 +41,8 @@ public class ReplayController : Controller
     public async Task<IActionResult> Upload(List<IFormFile> files)
     {
         var skippedCount = 0;
+
+        var currentUser = await _userService.GetOrCreateUser(User);
 
         foreach (var file in files)
         {
@@ -88,6 +97,8 @@ public class ReplayController : Controller
                     GameDate = parsed.GameDate,
                     DetailsHex = parsed.DetailsHex,
                     DetailsRaw = parsed.DetailsRaw,
+                    BattleNetUserId = currentUser.Id,
+                    User = currentUser,
                     Players = parsed
                         .Players
                         .Select(p => new PlayerSummary
@@ -127,22 +138,25 @@ public class ReplayController : Controller
 
     public async Task<IActionResult> List(string search)
     {
+        var currentUser = await _userService.GetOrCreateUser(User);
+
         var query = _db.Replays
             .Include(r => r.Players)
+            .Where(r =>
+                r.User!.BattleNetId == currentUser.BattleNetId)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query
-                .Where(r => r.MapName.Contains(search));
+                .Where(r => r.MapName.ToLower().Contains(search.ToLower()));
         }
 
         var replays = await query
             .OrderByDescending(r => r.UploadedAt)
             .ToListAsync();
 
-        //TODO: Change this to use the current logged in user instead of hardcoding "DieGoRepeat"
-        var wins = replays.Count(r => r.Winner == "DieGoRepeat");
+        var wins = replays.Count(r => r.Winner == currentUser.Sc2PlayerName);
 
         var model = new ReplayHistoryViewModel
         {

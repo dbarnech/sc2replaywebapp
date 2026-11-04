@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Sc2ReplayWebApp.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sc2ReplayWebApp.Models;
 
@@ -36,6 +37,10 @@ public class ReplaySummary
     public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime GameDate { get; set; } = DateTime.UtcNow;
+
+    public int? BattleNetUserId { get; set; }
+
+    public BattleNetUser? User { get; set; }
 
     public List<PlayerSummary> Players { get; set; } = [];
 }

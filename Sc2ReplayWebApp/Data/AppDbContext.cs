@@ -14,4 +14,6 @@ public class AppDbContext : DbContext
     public DbSet<ReplaySummary> Replays => Set<ReplaySummary>();
 
     public DbSet<PlayerSummary> Players => Set<PlayerSummary>();
+
+    public DbSet<BattleNetUser> BattleNetUsers => Set<BattleNetUser>();
 }

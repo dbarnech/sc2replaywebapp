@@ -56,3 +56,5 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 /.vs
+/Sc2ReplayWebApp/appsettings.Development.json
+/Sc2ReplayWebApp/uploads

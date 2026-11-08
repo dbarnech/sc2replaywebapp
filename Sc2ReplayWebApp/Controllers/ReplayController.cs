@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Sc2ReplayWebApp.Data;
 using Sc2ReplayWebApp.Models;
 using Sc2ReplayWebApp.Services;
+using static Sc2ReplayWebApp.Services.ReplayParserService;
 
 namespace Sc2ReplayWebApp.Controllers;
 
@@ -73,15 +74,23 @@ public class ReplayController : Controller
 
                 // Get the hash of the file to check for duplicates
                 var replayHash = FileHashHelper.ComputeSha256(path);
-                var exists = await _db.Replays.AnyAsync(r => r.ReplayHash == replayHash);
+                var exists = await _db.Replays
+                    .AsNoTracking()
+                    .AnyAsync(r => r.ReplayHash == replayHash);
                 if (exists)
                 {
-                    _logger.LogWarning("Replay '{file.FileName}' has already been uploaded.", file.FileName);
+                    _logger.LogWarning("Replay '{FileName}' has already been uploaded.", file.FileName);
                     skippedCount++;
                     continue;
                 }
 
                 var parsed = await _parser.ParseReplay(path);
+
+                if (parsed.Warnings != null && parsed.Warnings.Count > 0)
+                {
+                    var warnings = string.Join(',', parsed.Warnings);
+                    _logger.LogWarning("Replay '{FileName}' has uploaded with warnings {Warnings}.", file.FileName, warnings);
+                }
 
                 var replay = new ReplaySummary
                 {
@@ -112,12 +121,17 @@ public class ReplayController : Controller
                         .ToList()
                 };
 
-                _db.Replays.Add(replay);                
+                _db.Replays.Add(replay);
+            }
+            catch (ReplayParsingException parsingEx)
+            {
+                _logger.LogError(parsingEx, "Error parsing replay {FileName}.", path);
+                ModelState.AddModelError(string.Empty, $"An error occurred while parsing the replay {path}.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading replay {Filename}.", path);
-                ModelState.AddModelError(string.Empty, "An error occurred while uploading the replay.");
+                _logger.LogError(ex, "Error uploading replay {FileName}.", path);
+                ModelState.AddModelError(string.Empty, $"An error occurred while uploading the replay. {path}");
             }
             finally
             {
@@ -131,14 +145,14 @@ public class ReplayController : Controller
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error deleting temporary replay file {Filename}.", path);
+                    _logger.LogError(ex, "Error deleting temporary replay file {FileName}.", path);
                 }
             }
         }
 
         await _db.SaveChangesAsync();
 
-        TempData["Success"] = $"{files.Count} replay(s) imported, {skippedCount} skipped.";
+        TempData["Success"] = $"{files.Count} replay(s) processed, {files.Count - skippedCount} uploaded, {skippedCount} skipped.";
 
         return View();
     }
@@ -146,6 +160,7 @@ public class ReplayController : Controller
     public async Task<IActionResult> Details(int id)
     {
         var replay = await _db.Replays
+            .AsNoTracking()
             .Include(x => x.Players)
             .FirstAsync(x => x.Id == id);
 
@@ -157,6 +172,7 @@ public class ReplayController : Controller
         var currentUser = await _userService.GetOrCreateUser(User);
 
         var query = _db.Replays
+            .AsNoTracking()
             .Include(r => r.Players)
             .Where(r =>
                 r.User!.BattleNetId == currentUser.BattleNetId)
@@ -169,7 +185,7 @@ public class ReplayController : Controller
         }
 
         var replays = await query
-            .OrderByDescending(r => r.UploadedAt)
+            .OrderByDescending(r => r.GameDate)
             .ToListAsync();
 
         var wins = replays.Count(r => r.Winner == currentUser.Sc2PlayerName);
@@ -192,7 +208,8 @@ public class ReplayController : Controller
     public async Task<IActionResult> Delete(int id)
     {
         var replay =
-        await _db.Replays.FindAsync(id);
+        await _db.Replays
+            .FindAsync(id);
 
         if (replay != null)
         {

@@ -65,7 +65,7 @@ public class ReplayParserService : IReplayParserService
             _logger.LogError(
                 "Python parser failed. Error: {Error}",
                 error);
-            throw new Exception(
+            throw new ReplayParsingException(
                 $"Replay parser failed with exit code {process.ExitCode}: {error}");
         }
 
@@ -74,9 +74,19 @@ public class ReplayParserService : IReplayParserService
             throw new Exception("Replay parser returned empty output.");
         }
 
-        //_logger.LogDebug(json);
-
         return JsonSerializer
             .Deserialize<ReplayParseResult>(json, DefaultJsonSerializerOptions)!;
+    }
+
+    public class ReplayParsingException : Exception
+    {
+        public ReplayParsingException() : base()
+        { }
+
+        public ReplayParsingException(string? message) : base(message)
+        { }
+
+        public ReplayParsingException(string? message, Exception? innerException) : base(message, innerException)
+        { }
     }
 }

@@ -26,6 +26,8 @@ public class ReplayParseResult
     public int DurationSeconds { get; set; }
 
     public List<PlayerParseResult> Players { get; set; } = [];
+
+    public List<string> Warnings { get; set; } = [];
 }
 
 /// <summary>

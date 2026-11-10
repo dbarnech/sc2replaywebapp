@@ -1,0 +1,62 @@
+﻿@using System.Text.Json
+@model ReplayDashboardViewModel
+
+@section Scripts
+{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const labels =
+            @Html.Raw(JsonSerializer.Serialize(Model.Maps));
+        const values =
+            @Html.Raw(JsonSerializer.Serialize(Model.MapCounts));
+
+        new Chart(
+            document.getElementById("mapChart"),
+            {
+                type: "bar",
+                data:
+                {
+                    labels: labels,
+                    datasets:
+                    [{
+                        label: "Games",
+                        data: values
+                    }]
+                }
+            });
+    </script>
+}
+<h2>Statistics Dashboard</h2>
+
+<div class="row mb-4">
+
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Total Replays</h5>
+                <h2>@Model.TotalReplays</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Win Rate</h5>
+                <h2>@Model.WinRate.ToString("N1")%</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <h4>Most Played Maps</h4>
+
+        <canvas id="mapChart"></canvas>
+
+    </div>
+</div>

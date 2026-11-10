@@ -20,6 +20,13 @@ html {
 body {
     background: #111827;
     color: white;
+    margin-bottom: 100px;
+}
+
+footer {
+    text-align: center;
+    background: white;
+    color: #111827;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {

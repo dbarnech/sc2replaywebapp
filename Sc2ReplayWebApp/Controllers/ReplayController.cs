@@ -56,7 +56,7 @@ public class ReplayController : Controller
                 skippedCount++;
                 continue;
             }
-            
+
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var path = Path.Combine(_uploadsFolder, fileName);
 
@@ -218,5 +218,37 @@ public class ReplayController : Controller
         }
 
         return RedirectToAction(nameof(List));
+    }
+
+    public async Task<IActionResult> Dashboard()
+    {
+        var currentUser = await _userService.GetOrCreateUser(User);
+        var replays = await _db.Replays
+                .Include(r => r.Players)
+                .ToListAsync();
+
+        var wins = replays.Count(r =>
+                r.Winner == currentUser.Sc2PlayerName);
+
+        var maps = replays
+                .GroupBy(r => r.MapName)
+                .OrderByDescending(g => g.Count())
+                .Take(10)
+                .ToList();
+
+        var model =
+            new ReplayDashboardViewModel
+            {
+                TotalReplays = replays.Count,
+                Wins = wins,
+                Losses = replays.Count - wins,
+                WinRate = replays.Count == 0
+                        ? 0
+                        : ((double)wins / replays.Count) * 100,
+                Maps = [.. maps.Select(g => g.Key)],
+                MapCounts = [.. maps.Select(g => g.Count())]
+            };
+
+        return View(model);
     }
 }
